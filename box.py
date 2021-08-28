@@ -1,8 +1,12 @@
 
+"""Box entities that can be pushed"""
+
+from dirs import dirs
 from mob import Mob
 from tile_sheet import TileSheet
 
 class Box(Mob):
+    """Box entity"""
     def __init__(self, x=0, y=0):
         super().__init__(x, y)
         self.sheet = TileSheet("res/box.png", 16, 16, True)
@@ -14,9 +18,5 @@ class Box(Mob):
         return False
 
     def push(self, level, dir):
-        dx, dy = 0, 0
-        if   dir == 0: dy = -1
-        elif dir == 1: dx = 1
-        elif dir == 2: dy = 1
-        elif dir == 3: dx = -1
+        dx, dy = dirs[dir]
         return self.move(level, dx, dy)

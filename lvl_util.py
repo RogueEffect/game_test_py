@@ -17,13 +17,14 @@ def get_size(data):
     return max(map(lambda x: len(x), lines)), len(lines)
 
 def load_level(path):
-    with open(path) as f:
+    with open(path, encoding='utf-8') as f:
         data = f.read().strip('\n')
     width, height = get_size(data)
     level = Level(width, height)
     for y, line in enumerate(data.split('\n')):
         for x, ch in enumerate(line):
-            if ch == ' ': continue
+            if ch == ' ':
+                continue
             if ch == '0':
                 level.mobs.append(Box(x, y))
                 level.set_tile(x, y, 2)

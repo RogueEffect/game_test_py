@@ -1,5 +1,10 @@
 
+"""Mob class"""
+
+from dirs import dirs
+
 class Mob:
+    """Mobile entity base class"""
     def __init__(self, x=0, y=0):
         self.x = x
         self.y = y
@@ -7,14 +12,7 @@ class Mob:
         self.sheet = None
 
     def move(self, level, dx, dy):
-        if dx > 0:
-            self.dir = 1
-        elif dx < 0:
-            self.dir = 3
-        elif dy > 0:
-            self.dir = 2
-        elif dy < 0:
-            self.dir = 0
+        self.dir = dirs[(dx, dy)]
         dx += self.x
         dy += self.y
         if not level.can_pass(dx, dy):
