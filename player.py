@@ -12,7 +12,7 @@ class Player(Mob):
         self.tickcount += 1
 
     def render(self, surface, xoffset, yoffset):
-        ty = self.tickcount % 30 // 15
+        ty = self.tickcount % 20 // 10
         self.sheet.draw_tile(surface, xoffset, yoffset, self.dir + ty * 4)
 
     def can_push(self):

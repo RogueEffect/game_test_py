@@ -9,7 +9,8 @@ charmap = {
     '.': 2,
     '^': 3,
     '@': 4,
-    '0': 5
+    '0': 5,
+    '&': 6
 }
 
 def get_size(data):
@@ -28,9 +29,13 @@ def load_level(path):
             if ch == '0':
                 level.mobs.append(Box(x, y))
                 level.set_tile(x, y, 2)
+            elif ch == '&':
+                level.mobs.append(Box(x, y))
+                level.set_tile(x, y, 3)
             elif ch == '@':
                 level.player = Player(x, y)
                 level.set_tile(x, y, 2)
             else:
                 level.set_tile(x, y, charmap[ch])
+    level.validate()
     return level

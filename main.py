@@ -10,8 +10,9 @@ TITLE       = "Game Test"
 WIDTH       = 360
 HEIGHT      = 300
 SCALE       = 2
-FPS         = 60
+FPS         = 30
 FONT_SIZE   = 48
+DONE_TIME   = 80
 
 files = sorted(os.listdir('lvl_txt'))
 
@@ -30,6 +31,7 @@ class GameTest:
         self.moves = 0
         self.font = None
         self.font_size = 8 * SCALE
+        self.complete_time = 0
         pygame.font.init()
         if pygame.font and pygame.font.get_init():
             name = pygame.font.match_font('input')
@@ -53,6 +55,18 @@ class GameTest:
         """Do updates"""
         self.clock.tick(FPS)
 
+        if self.complete_time > 0:
+            if self.complete_time == 1:
+                if self.lvln == len(files) - 1:
+                    print('You win!')
+                    self.lvln = 0
+                else:
+                    self.lvln += 1
+                self.change_level(self.lvln)
+                return
+            self.complete_time -= 1
+            return
+
         self.player.tick()
 
         for event in pygame.event.get():
@@ -71,6 +85,8 @@ class GameTest:
                     if self.lvln != len(files) - 1:
                         self.lvln += 1
                         self.change_level(self.lvln)
+                if self.level.complete():
+                    self.complete_time = DONE_TIME
 
             if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_w, pygame.K_UP):
@@ -99,13 +115,27 @@ class GameTest:
 
         self.disp.blit(pygame.transform.scale(self.screen, (WIDTH * SCALE, HEIGHT * SCALE)), (0, 0))
         self.draw_text(self.disp, f'Moves: {self.moves}', 8, HEIGHT * SCALE - self.font_size)
+
+        if self.complete_time:
+            msg = "Level Complete!"
+            if self.lvln == len(files) - 1:
+                msg = "You win!"
+            rect = pygame.Rect((WIDTH*SCALE - 300)//2, (HEIGHT*SCALE - 60)//2, 300, 60)
+            pygame.draw.rect(self.disp, 0, rect)
+            self.draw_text(self.disp, msg, position='center')
+
         pygame.display.flip()
 
-    def draw_text(self, surface, msg, x, y):
+    def draw_text(self, surface, msg, x=0, y=0, **kwargs):
         """Draw some text"""
         if not self.font:
             raise Exception("Font not initialized")
         text = self.font.render(msg, True, 0xffffffff)
+        if kwargs and 'position' in kwargs:
+            if kwargs['position'] == 'center':
+                rect = text.get_rect(center=(WIDTH*SCALE//2, HEIGHT*SCALE//2))
+                surface.blit(text, rect)
+                return
         surface.blit(text, (x, y))
 
     def get_level(self, id):
@@ -115,6 +145,7 @@ class GameTest:
         self.level = self.get_level(id)
         self.player = self.level.player
         self.moves = 0
+        self.complete_time = 0
 
 
 if __name__ == '__main__':

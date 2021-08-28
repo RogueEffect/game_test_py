@@ -1,6 +1,8 @@
 
 """Level class"""
 
+from sys import stderr
+
 from tile_sheet import TileSheet
 
 sheet = TileSheet("res/tiles.png", 16, 16)
@@ -37,6 +39,10 @@ class Level:
                 return mob
         return None
 
+    def complete(self):
+        box_tiles = [self.tiles[mob.x + mob.y * self.WIDTH] for mob in self.mobs]
+        return set(box_tiles) == {3}
+
     def tick(self):
         """Update the level"""
         ...
@@ -50,3 +56,16 @@ class Level:
 
         for mob in self.mobs:
             mob.render(surface, xoffset, yoffset)
+
+    def validate(self):
+        if not self.player:
+            print(f'Invalid level! There is no player start', file=stderr)
+        spaces = len([x for x in self.tiles if x == 3])
+        if spaces == 0:
+            print(f'Invalid level! There are 0 spaces and {len(self.mobs)} boxes', file=stderr)
+            return
+        elif len(self.mobs) == 0:
+            print(f'Invalid level! There are 0 boxes and {spaces} spaces', file=stderr)
+            return
+        elif spaces != len(self.mobs):
+            print(f'Invalid level! There are {spaces} spaces and {len(self.mobs)} boxes', file=stderr)
