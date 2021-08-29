@@ -12,6 +12,7 @@ class Level:
     def __init__(self, width, height):
         self.WIDTH = width
         self.HEIGHT = height
+        self.title = ""
         self.tiles = [0] * (width * height)
         self.player = None
         self.mobs = []

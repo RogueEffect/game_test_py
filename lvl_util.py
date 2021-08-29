@@ -1,4 +1,6 @@
 
+import re
+
 from level import Level
 from box import Box
 from player import Player
@@ -17,12 +19,20 @@ def get_size(data):
     lines = data.split('\n')
     return max(map(lambda x: len(x), lines)), len(lines)
 
-def load_level(path):
+def load_level(path, mirrored=False):
     with open(path, encoding='utf-8') as f:
         data = f.read().strip('\n')
     width, height = get_size(data)
     level = Level(width, height)
+
+    m = re.search(r'(?:\\|/)([^\\/]+).txt', path)
+    level.title = m[1] if m else "untitled"
+    if mirrored:
+        level.title += ' mirrored'
+
     for y, line in enumerate(data.split('\n')):
+        if mirrored:
+            line = reversed(line)
         for x, ch in enumerate(line):
             if ch == ' ':
                 continue
