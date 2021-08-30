@@ -5,16 +5,16 @@ Testing pygame
 
 Sokoban controls
 
-W, UP: move up
-S, DOWN: move down
-A, LEFT: move left
-D, RIGHT: move right
-R: restart level
-COMMA: previous level
-PERIOD: next level
-CTRL+Q: quit
-LEFT MOUSE: pan camera
-RIGHT MOUSE: reset camera
+W, UP: move up  
+S, DOWN: move down  
+A, LEFT: move left  
+D, RIGHT: move right  
+R: restart level  
+COMMA: previous level  
+PERIOD: next level  
+CTRL+Q: quit  
+LEFT MOUSE: pan camera  
+RIGHT MOUSE: reset camera  
 
-OPTIONS:
+OPTIONS:  
 --mirrored - levels are loaded flipped horizontally
