@@ -5,6 +5,9 @@ from dirs import dirs
 from mob import Mob
 from tile_sheet import TileSheet
 
+MOVE_FRAMES = 6
+MOVEPX = 16 / MOVE_FRAMES
+
 class Box(Mob):
     """Box entity"""
     def __init__(self, x=0, y=0):
@@ -12,7 +15,12 @@ class Box(Mob):
         self.sheet = TileSheet("res/box.png", 16, 16, True)
 
     def render(self, surface, xoffset, yoffset):
-        self.sheet.draw_tile(surface, xoffset + self.x * 16, yoffset + self.y * 16, 0)
+        yo, xo = 0, 0
+        if self.move_time:
+            dx, dy = dirs[(self.dir + 2) % 4]
+            yo += MOVEPX * (MOVE_FRAMES - self.move_time) * -dy + 16 * dy
+            xo += MOVEPX * (MOVE_FRAMES - self.move_time) * -dx + 16 * dx
+        self.sheet.draw_tile(surface, xoffset + self.x * 16 + xo, yoffset + self.y * 16 + yo, 0)
 
     def passable(self):
         return False

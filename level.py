@@ -46,7 +46,8 @@ class Level:
 
     def tick(self):
         """Update the level"""
-        ...
+        for mob in self.mobs:
+            mob.tick()
 
     def render(self, surface, xoffset=0, yoffset=0):
         """Draw the level, mobs and onto surface"""
