@@ -22,13 +22,14 @@ def get_size(data):
 def load_level(path, mirrored=False):
     with open(path, encoding='utf-8') as f:
         data = f.read().strip('\n')
+    # TODO move level initialization to after we get all the tiles from level file
     width, height = get_size(data)
     level = Level(width, height)
 
     m = re.search(r'(?:\\|/)([^\\/]+).txt', path)
-    level.title = m[1] if m else "untitled"
+    title = m[1] if m else "untitled"
     if mirrored:
-        level.title += ' mirrored'
+        title += ' mirrored'
 
     for y, line in enumerate(data.split('\n')):
         if mirrored:
@@ -47,5 +48,6 @@ def load_level(path, mirrored=False):
                 level.set_tile(x, y, 2)
             else:
                 level.set_tile(x, y, charmap[ch])
+    level.init(title)
     level.validate()
     return level

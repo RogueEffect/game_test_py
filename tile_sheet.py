@@ -7,6 +7,8 @@ class TileSheet:
     """Tile sheet to facilitate storing and drawing tiles"""
     def __init__(self, path, tile_width, tile_height, sprite=False):
         self.image = pygame.image.load(path)
+        self.TWIDTH = tile_width
+        self.THEIGHT = tile_height
         if sprite:
             self.image.set_colorkey(0xff00ff)
         self.tiles = []

@@ -139,7 +139,7 @@ class GameTest:
                     self.complete_time = DONE_TIME
 
             if event.type == pygame.KEYDOWN:
-                if self.move_time < 2:
+                if self.move_time < 4:
                     if event.key in (pygame.K_w, pygame.K_UP):
                         if self.player.move(self.level, 0, -1, self.move_history):
                             self.moves += 1
