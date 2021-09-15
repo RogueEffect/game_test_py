@@ -1,7 +1,7 @@
 
 from collections import namedtuple
 
-Move = namedtuple('Move', ['dir_', 'pushed'])
+Move = namedtuple('Move', ['dir', 'pushed'])
 
 class MoveHistory:
     def __init__(self, max_history):

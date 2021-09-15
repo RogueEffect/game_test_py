@@ -1,0 +1,17 @@
+{
+  "title": "Sokoban",
+  "width": 360,
+  "height": 300,
+  "scale": 2,
+  "fps": 30,
+  "key_repeat_delay": 190,
+  "key_repeat_interval": 190,
+  "levels_path": "lvl_txt",
+  "font_size": 48,
+  "done_time": 80,
+  "max_history": 100,
+  "mirror": 0,
+  "mirror_random": false,
+  "move_frames": 6,
+  "undo_time": 30
+}

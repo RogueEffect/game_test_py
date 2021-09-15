@@ -5,49 +5,48 @@ from level import Level
 from box import Box
 from player import Player
 
-charmap = {
-    ' ': 0,
-    '#': 1,
-    '.': 2,
-    '^': 3,
-    '@': 4,
-    '0': 5,
-    '&': 6
-}
+
+
+
 
 def get_size(data):
     lines = data.split('\n')
-    return max(map(lambda x: len(x), lines)), len(lines)
+    return max(len(x) for x in lines), len(lines)
 
-def load_level(path, mirrored=False):
+
+def load_level(path, mirror_x=False, mirror_y=False):
     with open(path, encoding='utf-8') as f:
         data = f.read().strip('\n')
-    # TODO move level initialization to after we get all the tiles from level file
     width, height = get_size(data)
-    level = Level(width, height)
+    tiles = [0] * (width * height)
+    mobs = []
+    player = None
 
     m = re.search(r'(?:\\|/)([^\\/]+).txt', path)
     title = m[1] if m else "untitled"
-    if mirrored:
+    if mirror_x or mirror_y:
         title += ' mirrored'
 
-    for y, line in enumerate(data.split('\n')):
-        if mirrored:
+    lines = data.split('\n')
+    if mirror_y:
+        lines = lines[::-1]
+
+    for y, line in enumerate(lines):
+        if mirror_x:
             line = reversed(line)
         for x, ch in enumerate(line):
             if ch == ' ':
                 continue
             if ch == '0':
-                level.mobs.append(Box(x, y))
-                level.set_tile(x, y, 2)
+                mobs.append(Box(x, y))
+                tiles[x + y * width] = 2
             elif ch == '&':
-                level.mobs.append(Box(x, y))
-                level.set_tile(x, y, 3)
+                mobs.append(Box(x, y))
+                tiles[x + y * width] = 3
             elif ch == '@':
-                level.player = Player(x, y)
-                level.set_tile(x, y, 2)
+                player = Player(x, y)
+                tiles[x + y * width] = 2
             else:
-                level.set_tile(x, y, charmap[ch])
-    level.init(title)
-    level.validate()
+                tiles[x + y * width] = charmap[ch]
+    level = Level(width, height, title, tiles, mobs, player)
     return level

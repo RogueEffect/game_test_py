@@ -1,9 +1,9 @@
 
-Testing pygame - Sokoban
+## Testing pygame - Sokoban ##
 
 ![preview image](<preview.png>)
 
-Controls
+### Controls ###
 
 W, UP: move up  
 S, DOWN: move down  
@@ -13,12 +13,11 @@ R: restart level
 COMMA: previous level  
 SHIFT+COMMA: back 10 levels  
 PERIOD: next level  
-SHIFT+PERIOD: forward 10 levels
+SHIFT+PERIOD: forward 10 levels  
 CTRL+Q: quit  
 LEFT MOUSE: pan camera  
 RIGHT MOUSE: reset camera  
 CTRL+Z: undo  
 
-
-OPTIONS:  
+### OPTIONS: ###
 --mirrored - levels are loaded flipped horizontally

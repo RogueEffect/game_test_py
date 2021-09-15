@@ -15,25 +15,19 @@ SPACE = 3
 SHEET = TileSheet("res/tiles.png", 16, 16)
 WALLS = TileSheet("res/tiles2.png", 16, 16)
 
-# todo map connected list to image tile
-
 
 
 class Level:
     """Level containing a grid of tiles, list of mobs and player"""
-    def __init__(self, width, height):
+    def __init__(self, width, height, title, tiles, mobs, player):
         self.WIDTH = width
         self.HEIGHT = height
-        self.title = ""
-        self.tiles = [0] * (width * height)
-        self.ctiles = None
-        self.player = None
-        self.mobs = []
-
-    def init(self, title):
-        # TODO move into __init__ (change in lvl_util)
         self.title = title
+        self.tiles = tiles
+        self.player = player
+        self.mobs = mobs
         self.ctiles = self.connect_walls()
+        self.validate()
 
     def set_tile(self, x, y, tile):
         """Set the tile at x, y to the given tile"""
@@ -119,7 +113,7 @@ class Level:
         """Print an error if a level is not solvable"""
         if not self.player:
             print(f'Invalid level! There is no player start', file=stderr)
-        spaces = len([x for x in self.tiles if x == 3])
+        spaces = len([x for x in self.tiles if x == SPACE])
         if spaces == 0:
             print(f'Invalid level! There are 0 spaces and {len(self.mobs)} boxes', file=stderr)
             return

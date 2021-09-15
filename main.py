@@ -4,60 +4,55 @@ import sys
 
 import pygame
 
-from box import Box
+from config import Config
 from dirs import dirs
-from lvl_util import load_level
+from level_handler import LevelHandler
 from move_history import MoveHistory
 
-TITLE       = "Sokoban"
-WIDTH       = 360
-HEIGHT      = 300
-SCALE       = 2
-DWIDTH      = WIDTH * SCALE
-DHEIGHT     = HEIGHT * SCALE
-FPS         = 30
-FONT_SIZE   = 48
-DONE_TIME   = 80
-MAX_HISTORY = 100
-MOVE_FRAMES = 6
-MOVEPX      = 16 / MOVE_FRAMES
 
-files = sorted(os.listdir('lvl_txt'))
+MOVE_KEYS = [pygame.K_w, pygame.K_d, pygame.K_s, pygame.K_a, pygame.K_UP, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_LEFT]
 
-# TODO refactor
+# TODO testing, check for unused variables
+
 
 class GameTest:
     """Game class"""
-    def __init__(self, mirrored, debug):
-        pygame.display.set_caption(TITLE)
-        self.disp = pygame.display.set_mode((DWIDTH, DHEIGHT))
-        pygame.key.set_repeat(190, 190)
-        self.screen = pygame.Surface((WIDTH, HEIGHT))
+    def __init__(self, mirror_x, mirror_y, debug):
+        self.config = Config()
+        self.movepx = 16 / self.config.move_frames
+        if mirror_x or mirror_y:
+            self.config.mirror = 0
+            if mirror_x:
+                self.config.mirror |= 1
+            if mirror_y:
+                self.config.mirror |= 2
+        self.level_handler = LevelHandler(self.config)
+        pygame.display.set_caption(self.config.title)
+        self.dwidth = self.config.width * self.config.scale
+        self.dheight = self.config.height * self.config.scale
+        self.disp = pygame.display.set_mode((self.dwidth, self.dheight))
+        pygame.key.set_repeat(self.config.key_repeat_delay, self.config.key_repeat_interval)
+        self.screen = pygame.Surface((self.config.width, self.config.height))
         self.clock = pygame.time.Clock()
-        self.lvln = 0
-        self.level = None
         self.title_time = 0
-        self.mirrored = mirrored
         self.moves = 0
         self.font = None
-        self.font_size = 8 * SCALE
+        self.font_size = 8 * self.config.scale
         self.complete_time = 0
         self.xo = 0
         self.yo = 0
         self.move_time = 0
-        self.move_history = MoveHistory(MAX_HISTORY)
-        self.change_level(self.lvln)
-        self.player = self.level.player
+        self.move_history = MoveHistory(self.config.max_history)
         self.undo_time = 0
         self.debug = debug
         pygame.font.init()
         if pygame.font and pygame.font.get_init():
             name = pygame.font.match_font('input')
             if name:
-                self.font = pygame.font.Font(name, FONT_SIZE // 2)
+                self.font = pygame.font.Font(name, self.config.font_size // 2)
                 self.font_size = self.font.size("x")[1]
             else:
-                self.font = pygame.font.SysFont(name, FONT_SIZE)
+                self.font = pygame.font.SysFont(name, self.config.font_size)
                 self.font_size = self.font.size("x")[1]
         self.running = True
 
@@ -71,8 +66,9 @@ class GameTest:
 
     def tick(self):
         """Do updates"""
-        self.clock.tick(FPS)
-        self.level.tick()
+        self.clock.tick(self.config.fps)
+
+        self.level_handler.tick()
 
         if self.title_time:
             self.title_time -= 1
@@ -82,11 +78,8 @@ class GameTest:
 
         if self.complete_time:
             if self.complete_time == 1:
-                if self.lvln == len(files) - 1:
-                    self.lvln = 0
-                else:
-                    self.lvln += 1
-                self.change_level(self.lvln)
+                self.level_handler.next_level()
+                self.level_change()
                 return
             self.complete_time -= 1
             return
@@ -94,14 +87,12 @@ class GameTest:
         if self.undo_time:
             self.undo_time -= 1
 
-        self.player.tick()
-
         for event in pygame.event.get():
             buttons = pygame.mouse.get_pressed()
             if buttons[0]:
                 try:
-                    self.xo = -(event.pos[0] - WIDTH // 2 * SCALE) // 2
-                    self.yo = -(event.pos[1] - HEIGHT // 2 * SCALE) // 2
+                    self.xo = -(event.pos[0] - self.config.width // 2 * self.config.scale) // 2
+                    self.yo = -(event.pos[1] - self.config.height // 2 * self.config.scale) // 2
                 except AttributeError:
                     pass
 
@@ -109,55 +100,39 @@ class GameTest:
                 if event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:
                     self.running = False
                     return
-
+                
                 if event.key == pygame.K_r:
-                    self.change_level(self.lvln)
+                    self.title_time = 100
+                    self.level_handler.level = self.level_handler.load_level()
+                    self.level_change()
+
                 if event.key == pygame.K_COMMA:
                     if event.mod & pygame.KMOD_SHIFT:
-                        self.lvln -= 10
-                        if self.lvln < 0: self.lvln = 0
-                        self.change_level(self.lvln)
-                    if self.lvln != 0:
-                        self.lvln -= 1
-                        self.change_level(self.lvln)
+                        self.level_handler.adjust_level(-10)
+                        self.level_change()
+                    else:
+                        self.level_handler.prev_level()
+                        self.level_change()
                 if event.key == pygame.K_PERIOD:
                     if event.mod & pygame.KMOD_SHIFT:
-                        self.lvln += 10
-                        if self.lvln >= len(files): self.lvln = len(files) - 1
-                        self.change_level(self.lvln)
-                    elif self.lvln != len(files) - 1:
-                        self.lvln += 1
-                        self.change_level(self.lvln)
+                        self.level_handler.adjust_level(10)
+                        self.level_change()
+                    else:
+                        self.level_handler.next_level()
+                        self.level_change()
                 if self.debug and event.mod & pygame.KMOD_SHIFT and event.key == pygame.K_b:
-                    x, y = dirs[self.player.dir]
-                    x += self.player.x
-                    y += self.player.y
-                    if self.level.can_pass(x, y):
+                    if self.level_handler.debug_add_box():
                         self.move_history.clear()
-                        self.level.mobs.append(Box(x, y))
-                if self.level.complete():
-                    self.complete_time = DONE_TIME
+
+                if self.level_handler.complete():
+                    self.complete_time = self.config.done_time
 
             if event.type == pygame.KEYDOWN:
-                if self.move_time < 4:
-                    if event.key in (pygame.K_w, pygame.K_UP):
-                        if self.player.move(self.level, 0, -1, self.move_history):
-                            self.moves += 1
-                            self.move_time = MOVE_FRAMES
-                    if event.key in (pygame.K_a, pygame.K_LEFT):
-                        if self.player.move(self.level, -1, 0, self.move_history):
-                            self.moves += 1
-                            self.move_time = MOVE_FRAMES
-                    if event.key in (pygame.K_s, pygame.K_DOWN):
-                        if self.player.move(self.level, 0, 1, self.move_history):
-                            self.moves += 1
-                            self.move_time = MOVE_FRAMES
-                    if event.key in (pygame.K_d, pygame.K_RIGHT):
-                        if self.player.move(self.level, 1, 0, self.move_history):
-                            self.moves += 1
-                            self.move_time = MOVE_FRAMES
-                    if event.mod & pygame.KMOD_CTRL and event.key == pygame.K_z:
-                        self.undo()
+                if event.key in MOVE_KEYS and self.move_time < 4:
+                    self.handle_move(MOVE_KEYS.index(event.key) % 4)
+                    
+                if event.mod & pygame.KMOD_CTRL and event.key == pygame.K_z:
+                    self.undo()
 
             if event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 3:
@@ -169,26 +144,27 @@ class GameTest:
     def render(self):
         """Draw to the screen"""
         self.screen.fill((0, 0, 0))
-        xo = (WIDTH - self.player.x * 32) // 2 - 8
-        yo = (HEIGHT - self.player.y * 32) // 2 - 8
+        xo = (self.config.width - self.level_handler.player.x * 32) // 2 - 8
+        yo = (self.config.height - self.level_handler.player.y * 32) // 2 - 8
         if self.move_time:
-            dx, dy = dirs[self.player.dir]
-            yo += MOVEPX * (MOVE_FRAMES - self.move_time) * -dy + 16 * dy
-            xo += MOVEPX * (MOVE_FRAMES - self.move_time) * -dx + 16 * dx
-        self.level.render(self.screen, self.xo + xo, self.yo + yo)
-        self.player.render(self.screen, self.xo + (WIDTH - 16) // 2, self.yo + (HEIGHT - 16) // 2)
+            dx, dy = dirs[self.level_handler.player.dir]
+            yo += self.movepx * (self.config.move_frames - self.move_time) * -dy + 16 * dy
+            xo += self.movepx * (self.config.move_frames - self.move_time) * -dx + 16 * dx
+        
+        self.level_handler.render(self.screen, self.xo + xo, self.yo + yo)
+        self.level_handler.player.render(self.screen, self.xo + (self.config.width - 16) // 2, self.yo + (self.config.height - 16) // 2)
 
-        self.disp.blit(pygame.transform.scale(self.screen, (DWIDTH, DHEIGHT)), (0, 0))
-        self.draw_text(self.disp, f'Moves: {self.moves}', 8, DHEIGHT - self.font_size, background=0)
+        self.disp.blit(pygame.transform.scale(self.screen, (self.dwidth, self.dheight)), (0, 0))
+        self.draw_text(self.disp, f'Moves: {self.moves}', 8, self.dheight - self.font_size, background=0)
 
         if self.title_time:
-            self.draw_text(self.disp, self.level.title, background=0)
+            self.draw_text(self.disp, self.level_handler.level.title, background=0)
 
         if self.complete_time:
             msg = "Level Complete!"
-            if self.lvln == len(files) - 1:
+            if self.level_handler.last_level():
                 msg = "You win!"
-            rect = pygame.Rect((DWIDTH - 300)//2, (DHEIGHT - 60)//2, 300, 60)
+            rect = pygame.Rect((self.dwidth - 300) // 2, (self.dheight - 60) // 2, 300, 60)
             pygame.draw.rect(self.disp, 0, rect)
             self.draw_text(self.disp, msg, position='center')
         elif self.undo_time:
@@ -207,9 +183,9 @@ class GameTest:
         for key, val in kwargs.items():
             if key == 'position':
                 if val == 'center':
-                    rect.center=(DWIDTH//2, DHEIGHT//2)
+                    rect.center=(self.dwidth//2, self.dheight//2)
                 if val == 'bottom':
-                    rect.center=(DWIDTH//2, DHEIGHT - rect.height)
+                    rect.center=(self.dwidth//2, self.dheight - rect.height)
             if key == 'background':
                 rect2 = rect.copy()
                 rect2.width += 32
@@ -217,12 +193,7 @@ class GameTest:
                 pygame.draw.rect(surface, val, rect2)
         surface.blit(text, rect)
 
-    def get_level(self, id):
-        return load_level(f'lvl_txt/{files[id]}', self.mirrored)
-
-    def change_level(self, id):
-        self.level = self.get_level(id)
-        self.player = self.level.player
+    def level_change(self):
         self.moves = 0
         self.complete_time = 0
         self.title_time = 100
@@ -233,17 +204,26 @@ class GameTest:
     def undo(self):
         if self.move_history:
             move = self.move_history.pop()
-            dir_ = (move.dir_ + 2) % 4
-            self.player.move(self.level, *dirs[dir_])
-            self.player.dir = move.dir_
+            dir = (move.dir + 2) % 4
+            self.level_handler.player.move(self.level_handler.level, *dirs[dir])
+            self.level_handler.player.dir = move.dir
             if move.pushed:
                 self.moves += 1
-                move.pushed.move(self.level, *dirs[dir_])
+                move.pushed.move(self.level_handler.level, *dirs[dir])
         else:
             self.undo_time = 30
 
+    def handle_move(self, dir):
+        if self.level_handler.player.move(
+            self.level_handler.level,
+            *dirs[dir],
+            self.move_history):
+            self.moves += 1
+            self.move_time = self.config.move_frames
+
+
 
 if __name__ == '__main__':
-    game = GameTest('--mirrored' in sys.argv, '--debug' in sys.argv)
+    game = GameTest('--mirror_x' in sys.argv, '--mirror_y' in sys.argv, '--debug' in sys.argv)
     game.run()
     print('goodbye')
