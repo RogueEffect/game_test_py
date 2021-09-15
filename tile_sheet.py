@@ -20,7 +20,7 @@ class TileSheet:
                 self.tiles.append(self.image.subsurface(rect))
 
     def draw_tile(self, surface, x, y, tile):
-        self.image.set_colorkey()
+        self.image.set_colorkey(None)
         if tile < 0 or tile >= len(self.tiles):
             return
         surface.blit(self.tiles[tile], (x, y))

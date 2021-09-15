@@ -1,5 +1,4 @@
 
-import os
 import sys
 
 import pygame
@@ -11,8 +10,6 @@ from move_history import MoveHistory
 
 
 MOVE_KEYS = [pygame.K_w, pygame.K_d, pygame.K_s, pygame.K_a, pygame.K_UP, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_LEFT]
-
-# TODO testing, check for unused variables
 
 
 class GameTest:

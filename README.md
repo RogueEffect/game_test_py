@@ -20,4 +20,5 @@ RIGHT MOUSE: reset camera
 CTRL+Z: undo  
 
 ### OPTIONS: ###
---mirrored - levels are loaded flipped horizontally
+--mirror_x - levels are loaded flipped horizontally  
+--mirror_y - levels are loaded flipped vertically

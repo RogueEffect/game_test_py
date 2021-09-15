@@ -81,13 +81,15 @@ class LevelHandler:
         path = os.path.join(self.config.basepath, self.config.levels_path, filename)
         return path
 
-    def get_size(self, data):
+    @staticmethod
+    def get_size(data):
         lines = data.split('\n')
         height = len(lines)
         width = len(lines[0])
         return width, height
 
-    def get_title(self, path):
+    @staticmethod
+    def get_title(path):
         filename = os.path.basename(path)
         return filename.split('.')[0]
 
