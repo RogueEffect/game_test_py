@@ -5,12 +5,19 @@ import pygame
 
 from config import Config
 from dirs import dirs
-from level_handler import LevelHandler
+from level_handler import LevelHandler, MIRROR_X, MIRROR_Y
 from move_history import MoveHistory
 
 
-MOVE_KEYS = [pygame.K_w, pygame.K_d, pygame.K_s, pygame.K_a, pygame.K_UP, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_LEFT]
+MOVE_KEYS = [
+    pygame.K_w, pygame.K_d, pygame.K_s, pygame.K_a,
+    pygame.K_UP, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_LEFT
+]
 
+# TODO replace self.font_size with config.font_size
+# TODO config option of where to look for tiles, decouple image files from box/level classes
+# TODO HUD class for handling drawing hud elements
+# TODO refactor part 2
 
 class GameTest:
     """Game class"""
@@ -20,9 +27,9 @@ class GameTest:
         if mirror_x or mirror_y:
             self.config.mirror = 0
             if mirror_x:
-                self.config.mirror |= 1
+                self.config.mirror |= MIRROR_X
             if mirror_y:
-                self.config.mirror |= 2
+                self.config.mirror |= MIRROR_Y
         self.level_handler = LevelHandler(self.config)
         pygame.display.set_caption(self.config.title)
         self.dwidth = self.config.width * self.config.scale
@@ -97,7 +104,7 @@ class GameTest:
                 if event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:
                     self.running = False
                     return
-                
+
                 if event.key == pygame.K_r:
                     self.title_time = 100
                     self.level_handler.level = self.level_handler.load_level()
@@ -127,7 +134,7 @@ class GameTest:
             if event.type == pygame.KEYDOWN:
                 if event.key in MOVE_KEYS and self.move_time < 4:
                     self.handle_move(MOVE_KEYS.index(event.key) % 4)
-                    
+
                 if event.mod & pygame.KMOD_CTRL and event.key == pygame.K_z:
                     self.undo()
 
@@ -147,7 +154,7 @@ class GameTest:
             dx, dy = dirs[self.level_handler.player.dir]
             yo += self.movepx * (self.config.move_frames - self.move_time) * -dy + 16 * dy
             xo += self.movepx * (self.config.move_frames - self.move_time) * -dx + 16 * dx
-        
+
         self.level_handler.render(self.screen, self.xo + xo, self.yo + yo)
         self.level_handler.player.render(self.screen, self.xo + (self.config.width - 16) // 2, self.yo + (self.config.height - 16) // 2)
 

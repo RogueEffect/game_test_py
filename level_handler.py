@@ -31,7 +31,7 @@ class LevelHandler:
 
     def get_level_files(self):
         path = self.config.levels_path
-        return os.listdir(path)
+        return sorted(os.listdir(path))
 
     def next_level(self):
         self.adjust_level(1)

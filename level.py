@@ -12,8 +12,8 @@ WALL = 1
 FLOOR = 2
 SPACE = 3
 
-SHEET = TileSheet("res/tiles.png", 16, 16)
-WALLS = TileSheet("res/tiles2.png", 16, 16)
+SHEET = TileSheet("res/ice/tiles.png", 16, 16)
+WALLS = TileSheet("res/ice/tiles2.png", 16, 16)
 
 
 

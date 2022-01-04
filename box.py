@@ -12,7 +12,7 @@ class Box(Mob):
     """Box entity"""
     def __init__(self, x=0, y=0):
         super().__init__(x, y)
-        self.sheet = TileSheet("res/box.png", 16, 16, True)
+        self.sheet = TileSheet("res/ice/box.png", 16, 16, True)
 
     def render(self, surface, xoffset, yoffset):
         yo, xo = 0, 0
